@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_06_082734) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_07_103724) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -30,6 +30,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_06_082734) do
     t.datetime "clock_out"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "duration"
     t.index ["clock_in"], name: "index_sleep_records_on_clock_in"
     t.index ["clock_out"], name: "index_sleep_records_on_clock_out"
     t.index ["user_id"], name: "index_sleep_records_on_user_id"

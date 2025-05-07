@@ -13,8 +13,10 @@ class SleepRecordController < ApplicationController
   end
   def clock_out
     if sleep_record_validate.present?
-      sleep_record_validate.update(clock_out: Time.current)
-      render json: { message: "clock out success" }, status: :ok
+      now = Time.current
+      duration = (now -  sleep_record_validate.clock_in).to_i
+      sleep_record_validate.update(clock_out: now, duration: duration)
+      render json: { message: "clock out success", duration: duration }, status: :ok
     else
       render json: { error: "No active sleep record found to clock out." }, status: :not_found
     end
