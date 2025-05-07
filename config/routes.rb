@@ -12,5 +12,6 @@ Rails.application.routes.draw do
 
   get "/profile", to: "users#user_profile"
   post "/clock_in", to: "sleep_record#clock_in"
-  post "/clock_out", to: "sleep_record#clock_out"
+  patch "/clock_out", to: "sleep_record#clock_out"
+  get "/sleep_records", to: "sleep_record#index"
 end

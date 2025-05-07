@@ -1,5 +1,4 @@
 class ApplicationController < ActionController::API
-    
     before_action :authorize_request
 
   # Use Rails secret key base as the secret for encoding JWT tokens.
@@ -23,13 +22,23 @@ class ApplicationController < ActionController::API
 
   # Checks if the request includes a valid JWT token
   def authorize_request
-    token = request.headers['Authorization']&.split(' ')&.last
+    token = request.headers["Authorization"]&.split(" ")&.last
     decoded = jwt_decode(token)
     if decoded && decoded[:user_id]
       @current_user = User.find_by(id: decoded[:user_id])
     end
 
-    render json: { errors: 'Unauthorized' }, status: :unauthorized unless @current_user
+    render json: { errors: "Unauthorized" }, status: :unauthorized unless @current_user
   end
-  
+
+  def meta_pagination(collection)
+    {
+      current_page: collection.current_page,
+      next_page: collection.next_page,
+      prev_page: collection.prev_page,
+      total_pages: collection.total_pages,
+      total_count: collection.total_count,
+      per_page: collection.limit_value
+    }
+  end
 end

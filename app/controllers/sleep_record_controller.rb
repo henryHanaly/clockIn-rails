@@ -22,6 +22,15 @@ class SleepRecordController < ApplicationController
     end
   end
 
+  def index
+    records = @current_user.sleep_records.order(created_at: :desc).page(params[:page]).per(params[:per_page])
+    # adding pagination
+    render json: {
+          data: records,
+          meta: meta_pagination(records)
+        }, status: :ok
+  end
+
 private
 
   def sleep_record_validate
