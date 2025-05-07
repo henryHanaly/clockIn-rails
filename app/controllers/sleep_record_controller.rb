@@ -1,0 +1,28 @@
+class SleepRecordController < ApplicationController
+  def clock_in
+    if sleep_record_validate.present?
+      render json: { errors: "Please clock out first before creating a new one" }, status: :unprocessable_entity
+    else
+      sleep_record = @current_user.sleep_records.create(clock_in: Time.current)
+        if sleep_record.persisted?
+          render json: { message: "clock in success " }, status: :created
+        else
+          render json: { errors: sleep_record.errors.full_messages }, status: :unprocessable_entity
+        end
+    end
+  end
+  def clock_out
+    if sleep_record_validate.present?
+      sleep_record_validate.update(clock_out: Time.current)
+      render json: { message: "clock out success" }, status: :ok
+    else
+      render json: { error: "No active sleep record found to clock out." }, status: :not_found
+    end
+  end
+
+private
+
+  def sleep_record_validate
+     @current_user.sleep_records.where(clock_out: nil).where.not(clock_in: nil).order(clock_in: :desc).select([ :id, :user_id, :clock_in, :clock_out ]).last
+  end
+end

@@ -11,8 +11,6 @@ Rails.application.routes.draw do
   post "/auth/login", to: "authentication#login"
 
   get "/profile", to: "users#user_profile"
-
-
-
-
+  post "/clock_in", to: "sleep_record#clock_in"
+  post "/clock_out", to: "sleep_record#clock_out"
 end
