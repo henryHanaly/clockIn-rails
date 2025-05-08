@@ -1,0 +1,71 @@
+# Use version 3.8 of the Docker Compose file format
+version: '3.8'
+
+# Define the services that make up your application stack
+services:
+  # Service for the Rails application
+  app:
+    # Build the image for this service using the Dockerfile in the current directory
+    build: .
+    # Mount the current directory into the container's /app directory
+    # This allows for live code changes during development without rebuilding the image
+    volumes:
+      - .:/app
+    # Map host port 3000 to container port 3000
+    # This allows you to access the Rails application from your host machine at http://localhost:3000
+    ports:
+      - "3000:3000"
+    # Define environment variables for the application
+    environment:
+      # Database connection details - these should match the 'db' service configuration
+      DATABASE_URL: postgres://user:password@db:5432/mydatabase
+      # Redis connection details - should match the 'redis' service configuration
+      REDIS_URL: redis://redis:6379/0 # Using database 0
+      # Rails environment (development, test, production)
+      RAILS_ENV: development
+    # Specify that this service depends on the 'db' and 'redis' services
+    # Docker Compose will start 'db' and 'redis' before 'app'
+    depends_on:
+      - db
+      - redis
+    # Command to override the default CMD in the Dockerfile (optional, but useful for development)
+    # command: ["rails", "server", "-b", "0.0.0.0"] # Example if you need to override
+
+  # Service for the PostgreSQL database
+  db:
+    # Use the latest PostgreSQL image
+    image: postgres:latest
+    # Mount a named volume to persist the database data
+    # This ensures your data is not lost when the container is stopped or removed
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Define environment variables for the PostgreSQL container
+    environment:
+      # Database user
+      POSTGRES_USER: postgres
+      # Database password
+      POSTGRES_PASSWORD: postgres
+      # Database name
+      POSTGRES_DB: public
+    # Optional: Map host port 5432 to container port 5432
+    # This allows you to connect to the database from your host machine (e.g., using a GUI tool)
+    # ports:
+    #   - "5432:5432"
+
+  # Service for the Redis server
+  redis:
+    # Use the latest Redis image
+    image: redis:latest
+    # Optional: Mount a named volume to persist Redis data (less common for simple caching)
+    # volumes:
+    #   - redis_data:/data
+    # Optional: Map host port 6379 to container port 6379
+    # ports:
+    #   - "6379:6379"
+
+# Define the named volumes used by the services
+volumes:
+  # Volume for PostgreSQL data persistence
+  postgres_data:
+  # Optional: Volume for Redis data persistence
+  # redis_data:

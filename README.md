@@ -11,6 +11,21 @@ Prequisite :
 
 
 
+How to running manually
+
+1. git clone 
+2. Installing tools on prequisite
+3. Bundle install 
+4. Rails db:migrate
+5. Rails db:seed --> seeding user 
+
+
+Docker 
+
+- not yet
+
+
+
 All endpoint need Authorization through endpoint /auth/login --> using JWT token 
 
 example : 
