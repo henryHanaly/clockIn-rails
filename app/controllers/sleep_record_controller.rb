@@ -10,6 +10,8 @@ class SleepRecordController < ApplicationController
           render json: { errors: sleep_record.errors.full_messages }, status: :unprocessable_entity
         end
     end
+    rescue StandardError => e
+      render json: { error:  e }, status: :unprocessable_entity
   end
   def clock_out
     if sleep_record_validate.present?
@@ -20,6 +22,8 @@ class SleepRecordController < ApplicationController
     else
       render json: { error: "No active sleep record found to clock out." }, status: :not_found
     end
+    rescue StandardError => e
+      render json: { error:  e }, status: :unprocessable_entity
   end
 
   def index
