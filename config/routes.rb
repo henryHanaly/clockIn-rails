@@ -10,8 +10,13 @@ Rails.application.routes.draw do
 
   post "/auth/login", to: "authentication#login"
 
-  get "/profile", to: "users#user_profile"
+
   post "/clock_in", to: "sleep_record#clock_in"
   patch "/clock_out", to: "sleep_record#clock_out"
   get "/sleep_records", to: "sleep_record#index"
+
+  get "/user/profile", to: "users#user_profile"
+  get "/user/all", to: "users#all_user"
+  post "/user/follow", to: "users#follow"
+  delete "/user/unfollow", to: "users#unfollow"
 end
