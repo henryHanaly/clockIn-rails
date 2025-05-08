@@ -1,6 +1,8 @@
 class ApplicationController < ActionController::API
     before_action :authorize_request
 
+
+  include JsonResponse
   # Use Rails secret key base as the secret for encoding JWT tokens.
   SECRET_KEY = Rails.application.secret_key_base
 

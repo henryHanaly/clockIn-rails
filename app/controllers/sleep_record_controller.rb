@@ -7,54 +7,42 @@ class SleepRecordController < ApplicationController
     if key_idempotency.present?
       responsec = $redis.get(key_redis)
       if responsec.present?
-        render json: { errors: "Please wait for a while!" }, status: :unprocessable_entity and return
+        render_error(message: "Please wait for a while!") and return
       end
     end
 
     if sleep_record_validate.present?
-      render json: { errors: "Please clock out first before creating a new one" }, status: :unprocessable_entity
+      render_error(message: "Please clock out first before creating a new one")
     else
       sleep_record = @current_user.sleep_records.create(clock_in: Time.current)
         if sleep_record.persisted?
           # set redis after insert into db
           $redis.setex(key_redis, 180, "clock in success")
-          render json: {
-            data: {},
-            message: "clock in success ",
-            meta: {}
-            }, status: :created
+          render_success(message: "clock in success", status: :created)
         else
-          render json: { errors: sleep_record.errors.full_messages }, status: :unprocessable_entity
+          render_error(message: sleep_record.errors.full_messages)
         end
     end
     rescue StandardError => e
-      render json: { error:  e }, status: :unprocessable_entity
+      render_error(message: e)
   end
   def clock_out
     if sleep_record_validate.present?
       now = Time.current
       duration = (now -  sleep_record_validate.clock_in).to_i
       sleep_record_validate.update(clock_out: now, duration: duration)
-      render json: {
-        data: {},
-        message: "clock out success with duration of sleep #{duration}",
-        meta: {}
-        }, status: :ok
+        render_success(message: "clock out success with duration of sleep #{duration}", status: :created)
     else
-      render json: { error: "No active sleep record found to clock out." }, status: :not_found
+      render_error(message: "No active sleep record found to clock out.")
     end
     rescue StandardError => e
-      render json: { error:  e }, status: :unprocessable_entity
+      render_error(message: e)
   end
 
   def index
     records = @current_user.sleep_records.order(created_at: :desc).page(params[:page]).per(params[:per_page])
     # adding pagination
-    render json: {
-          data: records,
-          message: "Success",
-          meta: meta_pagination(records)
-        }, status: :ok
+    render_success(message: "success", status: :created, data: records, meta: meta_pagination(records))
   end
 
 private

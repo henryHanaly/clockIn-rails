@@ -1,63 +1,59 @@
 class UsersController < ApplicationController
     def user_profile
-        render json: { name: @current_user.name,  email: @current_user.email }, status: :ok
+        render_success(data: @current_user, status: :ok)
     end
 
     def all_user
         user_all = User.select(:id, :name).where.not(id: @current_user.id).where.not(id: Follow.select(:follower_id)).page(params[:page]).per(params[:per_page])
-        render json: {
-          data: user_all,
-          message: "success",
-          meta: meta_pagination(user_all)
-        }, status: :ok
+        render_success(message: "success", data: user_all, meta: meta_pagination(user_all), status: :ok)
     end
 
     def follow
         user_to_follow = User.find_by(id: params[:user_id])
         if user_to_follow.nil?
-          render json: { error: "User not found" }, status: :not_found
+          render_error(message: "User not found")
         elsif user_to_follow == @current_user
-          render json: { error: "You cannot follow yourself" }, status: :unprocessable_entity
+          render_error(message: "You cannot follow yourself")
         else
           follow =  Follow.new(follower: @current_user, followed: user_to_follow)
           if follow.save
-            render json: {
-              data: {},
-              message: "Now following #{user_to_follow.name}",
-              meta: {}
-              }, status: :ok
+            render_success(message: "Now following #{user_to_follow.name}")
           else
-            render json: { error:  @follow.errors }, status: :unprocessable_entity
+            render_error(message:  @follow.errors)
           end
         end
 
       rescue StandardError => e
-        render json: { error:  e }, status: :unprocessable_entity
+        render_error(message: e)
     end
 
 
     def unfollow
       user_to_unfollow = User.find_by(id: params[:user_id])
         if user_to_unfollow.nil?
-          render json: { error: "User not found" }, status: :not_found
+          render_error(message: "User not found")
         elsif user_to_unfollow == @current_user
-          render json: { error: "You cannot unfollow yourself" }, status: :unprocessable_entity
+          render_error(message: "You cannot unfollow yourself")
         else
           follow = Follow.find_by(follower: @current_user, followed: user_to_unfollow)
           if follow
             follow.destroy
-            render json: {
-              data: {},
-              message: "Unfollowed #{user_to_unfollow.name}",
-              meta: {}
-              }, status: :ok
+              render_success(message: "Unfollowed #{user_to_unfollow.name}", status: :ok)
           else
-            render json: { error: "You are not following #{user_to_unfollow.name}" }, status: :unprocessable_entity
+            render_error(message: "You are not following #{user_to_unfollow.name}")
           end
         end
     end
 
     def friends
+      # get data from redis first
+      cache_key = "user:#{@current_user.id}:following_sleep_records"
+      cached_data = $redis.get(cache_key)
+
+      if cached_data
+        render_success(data: JSON.parse(cached_data)) and return
+      end
+
       following_ids = @current_user.following.pluck(:id)
       one_week_ago = Time.current - 7.days
       records = SleepRecord.select(:clock_in, :clock_out, :duration, :name)
@@ -69,21 +65,15 @@ class UsersController < ApplicationController
 
 
       if records.empty?
-        render json: {
-          data: {},
-          message: "No friend sleep records found",
-          meta: {}
-          }, status: :ok and return
+        render_success(message: "No records found")
       end
 
     # Build new response
     new_response = records.each_with_index.to_h do |record, index|
         [ "record #{index + 1}", "from user #{record.name}  clock-in #{record.clock_in} - clock-out #{record.clock_out} - duration #{record.duration}" ]
     end
-      render json: {
-        data: new_response,
-        message: "success",
-        meta: {}
-      }, status: :ok
+    # add data to redis
+    $redis.setex(cache_key, 6000, new_response.to_json)
+      render_success(data: new_response)
     end
 end
