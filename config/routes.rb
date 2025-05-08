@@ -19,4 +19,6 @@ Rails.application.routes.draw do
   get "/user/all", to: "users#all_user"
   post "/user/follow", to: "users#follow"
   delete "/user/unfollow", to: "users#unfollow"
+
+  get "/all/friend_records", to: "users#friends"
 end

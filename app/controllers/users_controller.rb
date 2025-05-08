@@ -7,6 +7,7 @@ class UsersController < ApplicationController
         user_all = User.select(:id, :name).where.not(id: @current_user.id).where.not(id: Follow.select(:follower_id)).page(params[:page]).per(params[:per_page])
         render json: {
           data: user_all,
+          message: "success",
           meta: meta_pagination(user_all)
         }, status: :ok
     end
@@ -20,7 +21,11 @@ class UsersController < ApplicationController
         else
           follow =  Follow.new(follower: @current_user, followed: user_to_follow)
           if follow.save
-            render json: { message: "Now following #{user_to_follow.name}" }, status: :ok
+            render json: {
+              data: {},
+              message: "Now following #{user_to_follow.name}",
+              meta: {}
+              }, status: :ok
           else
             render json: { error:  @follow.errors }, status: :unprocessable_entity
           end
@@ -41,10 +46,44 @@ class UsersController < ApplicationController
           follow = Follow.find_by(follower: @current_user, followed: user_to_unfollow)
           if follow
             follow.destroy
-            render json: { message: "Unfollowed #{user_to_unfollow.name}" }, status: :ok
+            render json: {
+              data: {},
+              message: "Unfollowed #{user_to_unfollow.name}",
+              meta: {}
+              }, status: :ok
           else
             render json: { error: "You are not following #{user_to_unfollow.name}" }, status: :unprocessable_entity
           end
         end
+    end
+
+    def friends
+      following_ids = @current_user.following.pluck(:id)
+      one_week_ago = Time.current - 7.days
+      records = SleepRecord.select(:clock_in, :clock_out, :duration, :name)
+                           .joins(:user)
+                           .where(user_id: following_ids)
+                           .where("clock_in >= ?", one_week_ago)
+                           .where.not(clock_out: nil)
+                           .order(duration: :desc)
+
+
+      if records.empty?
+        render json: {
+          data: {},
+          message: "No friend sleep records found",
+          meta: {}
+          }, status: :ok and return
+      end
+
+    # Build new response
+    new_response = records.each_with_index.to_h do |record, index|
+        [ "record #{index + 1}", "from user #{record.name}  clock-in #{record.clock_in} - clock-out #{record.clock_out} - duration #{record.duration}" ]
+    end
+      render json: {
+        data: new_response,
+        message: "success",
+        meta: {}
+      }, status: :ok
     end
 end

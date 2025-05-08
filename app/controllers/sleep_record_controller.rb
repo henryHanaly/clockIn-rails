@@ -5,7 +5,11 @@ class SleepRecordController < ApplicationController
     else
       sleep_record = @current_user.sleep_records.create(clock_in: Time.current)
         if sleep_record.persisted?
-          render json: { message: "clock in success " }, status: :created
+          render json: {
+            data: {},
+            message: "clock in success ",
+            meta: {}
+            }, status: :created
         else
           render json: { errors: sleep_record.errors.full_messages }, status: :unprocessable_entity
         end
@@ -18,7 +22,11 @@ class SleepRecordController < ApplicationController
       now = Time.current
       duration = (now -  sleep_record_validate.clock_in).to_i
       sleep_record_validate.update(clock_out: now, duration: duration)
-      render json: { message: "clock out success", duration: duration }, status: :ok
+      render json: {
+        data: {},
+        message: "clock out success", duration: duration,
+        meta: {}
+        }, status: :ok
     else
       render json: { error: "No active sleep record found to clock out." }, status: :not_found
     end
