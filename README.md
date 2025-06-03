@@ -2,7 +2,8 @@
 
 Assignment 
 
-Prequisite : 
+pre requisite (I am using): 
+
 
 1. Ruby 3.4.3
 2. Rails 8.0.2
@@ -11,18 +12,18 @@ Prequisite :
 
 
 
-How to running manually
+Manually command 
 
-1. git clone 
-2. Installing tools on prequisite
+1. git clone this repo 
+2. Installing tools on pre requisite 
 3. Bundle install 
 4. Rails db:migrate
 5. Rails db:seed --> seeding user 
 
 
-Docker 
+via Docker 
 
-- not yet
+- From terminal "docker compose up" 
 
 
 

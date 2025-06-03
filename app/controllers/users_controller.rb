@@ -65,7 +65,7 @@ class UsersController < ApplicationController
 
 
       if records.empty?
-        render_success(message: "No records found")
+        render_success(message: "No records found") and return 
       end
 
     # Build new response
@@ -74,6 +74,6 @@ class UsersController < ApplicationController
     end
     # add data to redis
     $redis.setex(cache_key, 6000, new_response.to_json)
-      render_success(data: new_response)
+      render_success(data: new_response) and return 
     end
 end
