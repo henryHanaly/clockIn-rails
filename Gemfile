@@ -15,7 +15,7 @@ gem "byebug"
 
 gem "kaminari"
 
-gem "redis", "~> 4.2"
+gem "redis", "~> 5.4"
 
  # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
  gem "bcrypt", "~> 3.1.7"
